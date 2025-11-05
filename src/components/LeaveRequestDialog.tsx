@@ -12,7 +12,6 @@ import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { CheckCircle2, XCircle, Calendar, User, Building2, FileText } from "lucide-react";
-
 interface LeaveRequestDialogProps {
   request: LeaveRequest | null;
   open: boolean;
@@ -144,14 +143,14 @@ export function LeaveRequestDialog({
             <Button
               variant="outline"
               onClick={() => onReject(request.id)}
-              className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground bg-red-500"
             >
               <XCircle className="mr-2 h-4 w-4" />
               Từ chối
             </Button>
             <Button
               onClick={() => onApprove(request.id)}
-              className="bg-success text-success-foreground hover:bg-success/90"
+              className="bg-success text-success-foreground hover:bg-success/90 bg-green-500"
             >
               <CheckCircle2 className="mr-2 h-4 w-4" />
               Duyệt
