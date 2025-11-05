@@ -84,12 +84,12 @@ export const CreateLeaveRequest = ({ employee = mockEmployee, onSubmit = mockSub
                 <Label>Loại phép</Label>
                 <LeaveTypeSelect value={leaveType} onChange={setLeaveType} />
               </div>
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label>Số ngày</Label>
                 <div className="flex h-10 items-center rounded-lg border border-input bg-muted px-3 text-sm">
                   {days > 0 ? `${days} ngày` : 'Chưa chọn'}
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
