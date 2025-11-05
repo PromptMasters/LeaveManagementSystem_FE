@@ -14,20 +14,7 @@ import { LeaveType } from '@/types/leave';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-// ✅ DỮ LIỆU GIẢ MẪU NGAY ĐẦU FILE
-const mockEmployee = {
-  id: 1,
-  name: 'Nguyễn Văn A',
-  totalLeaveDays: 12,
-  usedLeaveDays: 8,
-  department: 'Phòng Kỹ thuật',
-  position: 'Nhân viên lập trình',
-};
 
-// ✅ Hàm giả lập xử lý gửi đơn
-const mockSubmit = (data: any) => {
-  console.log('📤 Đơn nghỉ phép được gửi:', data);
-};
 
 async function logLeaveRequests() {
   try {
@@ -40,9 +27,9 @@ async function logLeaveRequests() {
   }
 }
 
-async function getUsedLeaveDays() {
+//lấy ra ID:
 
-}
+
 
 // API base có thể lấy từ env, fallback localhost
 const API_BASE = import.meta.env?.VITE_API_URL || 'http://localhost:8082';
@@ -88,9 +75,8 @@ async function sendLeaveRequest(p: SendPayload) {
 
 
 
-
 // 👉 Component chính (không chỉnh sửa định dạng gốc)
-export const CreateLeaveRequest = ({ employee = mockEmployee }: any) => {
+export const CreateLeaveRequest = () => {
   const navigate = useNavigate();
   const [leaveType, setLeaveType] = useState<LeaveType>('annual');
   const [startDate, setStartDate] = useState<Date>();
