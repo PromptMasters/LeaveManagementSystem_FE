@@ -5,6 +5,7 @@ import ManagerPage from "../pages/ManagerPage";
 import { CreateLeaveRequest } from "@/pages/CreateLeaveRequest";
 import AuthProvider from "./AuthProvider";
 import LoginForm from "@/pages/login-form";
+import LoginForm2 from "@/pages/login-form2";
 export default function AppRouter() {
     return (
         <BrowserRouter>
@@ -13,6 +14,8 @@ export default function AppRouter() {
 
                     <Route path="/" element={<HomePage />} />
                     <Route path="login" element={<LoginForm/>}/>
+                    <Route path="login-test" element={<LoginForm2/>}/>
+
                     <Route path="manager" element={<ManagerPage />} />
                     <Route path="request" element={<CreateLeaveRequest />} />
 
