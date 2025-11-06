@@ -11,6 +11,7 @@ export default function AppRouter() {
         <Route path="/" element={<HomePage />} />
         <Route path="manager" element={<ManagerPage />} />
         <Route path="request" element={<CreateLeaveRequest/>}/>
+        <Route path="my-requests" element={<MyRequests />} />
       </Routes>
     </BrowserRouter>
   );

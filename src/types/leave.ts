@@ -1,6 +1,6 @@
-export type LeaveStatus = 'pending' | 'approved' | 'rejected';
+export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
-export type LeaveType = 'annual' | 'sick' | 'personal' | 'unpaid';
+export type LeaveType = 'ANNUAL' | 'SICK' | 'PERSONAL' | 'UNPAID';
 
 export interface LeaveRequest {
   id: string;
