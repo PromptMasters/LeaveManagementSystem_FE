@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "@/pages/HomePage";
 
 import ManagerPage from "../pages/ManagerPage";
-import { MyRequests } from "../pages/MyRequests";
 import { CreateLeaveRequest } from "@/pages/CreateLeaveRequest";
 import AuthProvider from "./AuthProvider";
 import LoginForm from "@/pages/login-form";

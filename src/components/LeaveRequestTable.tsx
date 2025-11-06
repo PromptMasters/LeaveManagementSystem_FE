@@ -37,33 +37,32 @@ export const LeaveRequestTable = ({
 }: LeaveRequestTableProps) => {
   return (
     <div className="rounded-lg border bg-card">
-      <Table>
-        <TableHeader>
+      <Table>        <TableHeader>
           <TableRow>
-            <TableHead>Nhân viên</TableHead>
-            <TableHead>Loại phép</TableHead>
-            <TableHead>Từ ngày</TableHead>
-            <TableHead>Đến ngày</TableHead>
+            <TableHead>ID</TableHead>
+            <TableHead>Tên nhân viên</TableHead>
+            <TableHead>Phòng ban</TableHead>
+            <TableHead>Tiêu đề</TableHead>
+            <TableHead>Ngày bắt đầu</TableHead>
             <TableHead>Số ngày</TableHead>
             <TableHead>Trạng thái</TableHead>
             {showActions && <TableHead className="text-right">Thao tác</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {requests.length === 0 ? (
-            <TableRow>
+          {requests.length === 0 ? (            <TableRow>
               <TableCell colSpan={showActions ? 7 : 6} className="text-center text-muted-foreground">
                 Không có đơn nghỉ phép nào
               </TableCell>
             </TableRow>
           ) : (
-            requests.map((request) => (
-              <TableRow key={request.id}>
+            requests.map((request) => (              <TableRow key={request.id}>
+                <TableCell className="font-medium">{request.id}</TableCell>
                 <TableCell className="font-medium">{request.employeeName}</TableCell>
-                <TableCell>{leaveTypeLabels[request.leaveType]}</TableCell>
+                <TableCell>{request.department}</TableCell>
+                <TableCell>{request.title}</TableCell>
                 <TableCell>{format(new Date(request.startDate), 'dd/MM/yyyy', { locale: vi })}</TableCell>
-                <TableCell>{format(new Date(request.endDate), 'dd/MM/yyyy', { locale: vi })}</TableCell>
-                <TableCell>{request.days} ngày</TableCell>
+                <TableCell>{request.days}</TableCell>
                 <TableCell>
                   <StatusBadge status={request.status} />
                 </TableCell>
@@ -72,22 +71,6 @@ export const LeaveRequestTable = ({
                     <div className="flex justify-end gap-2">
                       {request.status === 'pending' && (
                         <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => onApprove?.(request.id)}
-                            className="text-success hover:bg-success hover:text-success-foreground"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => onReject?.(request.id)}
-                            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
                         </>
                       )}
                       <Button size="sm" variant="outline" onClick={() => onView?.(request.id)}>

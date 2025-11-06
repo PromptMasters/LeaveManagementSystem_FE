@@ -6,7 +6,9 @@ export interface LeaveRequest {
   id: string;
   employeeId: string;
   employeeName: string;
-  leaveType: LeaveType;
+  department: string;
+  title: string;
+  leaveType: LeaveType | null;
   startDate: string;
   endDate: string;
   days: number;
