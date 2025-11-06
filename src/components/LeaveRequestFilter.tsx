@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Calendar, User, Hash, X, Clock } from "lucide-react";
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Search, RotateCcw } from 'lucide-react';
 
-interface FilterProps {
+interface LeaveRequestFilterProps {
   onFilterChange: (filters: {
     id: string;
     name: string;
@@ -14,132 +15,99 @@ interface FilterProps {
   }) => void;
 }
 
-export function LeaveRequestFilter({ onFilterChange }: FilterProps) {
-  const [filters, setFilters] = useState({
-    id: "",
-    name: "",
-    startDate: "",
-    endDate: "",
-    status: "",
+export const LeaveRequestFilter = ({ onFilterChange }: LeaveRequestFilterProps) => {  const [filters, setFilters] = useState({
+    id: '',
+    name: '',
+    startDate: '',
+    endDate: '',
+    status: ''
   });
 
-  const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...filters, [key]: value };
+  const handleInputChange = (field: string, value: string) => {
+    const newFilters = { ...filters, [field]: value };
     setFilters(newFilters);
     onFilterChange(newFilters);
   };
-
-  const clearFilters = () => {
-    const emptyFilters = {
-      id: "",
-      name: "",
-      startDate: "",
-      endDate: "",
-      status: "",
+  const handleReset = () => {
+    const resetFilters = {
+      id: '',
+      name: '',
+      startDate: '',
+      endDate: '',
+      status: ''
     };
-    setFilters(emptyFilters);
-    onFilterChange(emptyFilters);
+    setFilters(resetFilters);
+    onFilterChange(resetFilters);
   };
 
-  const hasActiveFilters = Object.values(filters).some((value) => value !== "");
-
   return (
-    <Card className="mb-6">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Search className="h-5 w-5" />
-          Bộ lọc tìm kiếm
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Filter by ID */}
+    <Card>
+      <CardContent className="pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
           <div className="space-y-2">
-            <label className="text-sm font-medium flex items-center gap-2">
-              <Hash className="h-4 w-4" />
-              ID
-            </label>
+            <Label htmlFor="filter-id">ID</Label>
             <Input
-              placeholder="Nhập ID..."
+              id="filter-id"
+              placeholder="Tìm theo ID..."
               value={filters.id}
-              onChange={(e) => handleFilterChange("id", e.target.value)}
+              onChange={(e) => handleInputChange('id', e.target.value)}
             />
           </div>
-
-          {/* Filter by Name */}
+          
           <div className="space-y-2">
-            <label className="text-sm font-medium flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Tên nhân viên
-            </label>
+            <Label htmlFor="filter-name">Tên nhân viên</Label>
             <Input
-              placeholder="Nhập tên..."
+              id="filter-name"
+              placeholder="Tìm theo tên..."
               value={filters.name}
-              onChange={(e) => handleFilterChange("name", e.target.value)}
+              onChange={(e) => handleInputChange('name', e.target.value)}
             />
           </div>
-
-          {/* Filter by Start Date */}
+          
           <div className="space-y-2">
-            <label className="text-sm font-medium flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Từ ngày
-            </label>
+            <Label htmlFor="filter-start">Từ ngày</Label>
             <Input
+              id="filter-start"
               type="date"
               value={filters.startDate}
-              onChange={(e) => handleFilterChange("startDate", e.target.value)}
+              onChange={(e) => handleInputChange('startDate', e.target.value)}
             />
           </div>
-
-          {/* Filter by End Date */}
+          
           <div className="space-y-2">
-            <label className="text-sm font-medium flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Đến ngày
-            </label>
+            <Label htmlFor="filter-end">Đến ngày</Label>
             <Input
+              id="filter-end"
               type="date"
               value={filters.endDate}
-              onChange={(e) => handleFilterChange("endDate", e.target.value)}
-            />
-          </div>
-
-          {/* Filter by Status */}
+              onChange={(e) => handleInputChange('endDate', e.target.value)}
+            />          </div>
+          
           <div className="space-y-2">
-            <label className="text-sm font-medium flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Trạng thái
-            </label>
+            <Label htmlFor="filter-status">Trạng thái</Label>
             <select
+              id="filter-status"
               value={filters.status}
-              onChange={(e) => handleFilterChange("status", e.target.value)}
-              className="border rounded-md px-3 py-2 w-full text-sm"
+              onChange={(e) => handleInputChange('status', e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="">Tất cả</option>
+              <option value="">Tất cả trạng thái</option>
               <option value="pending">Đang chờ</option>
               <option value="approved">Đã duyệt</option>
               <option value="rejected">Từ chối</option>
             </select>
           </div>
+          
+          <Button 
+            variant="outline" 
+            onClick={handleReset}
+            className="flex items-center gap-2"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Reset
+          </Button>
         </div>
-
-        {/* Clear Filters Button */}
-        {hasActiveFilters && (
-          <div className="mt-4 flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearFilters}
-              className="flex items-center gap-2"
-            >
-              <X className="h-4 w-4" />
-              Xóa bộ lọc
-            </Button>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
-}
+};

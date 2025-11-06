@@ -12,12 +12,13 @@ import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { CheckCircle2, XCircle, Calendar, User, Building2, FileText } from "lucide-react";
+
 interface LeaveRequestDialogProps {
   request: LeaveRequest | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onApprove: (requestId: string) => void;
-  onReject: (requestId: string) => void;
+  onReject: (requestId: string, rejectedReason?: string) => void;
 }
 
 interface LeaveRequest {
@@ -39,10 +40,11 @@ export function LeaveRequestDialog({
   onApprove,
   onReject,
 }: LeaveRequestDialogProps) {
-  
   if (!request) return null;
 
   const isPending = request.status === "pending";
+
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
