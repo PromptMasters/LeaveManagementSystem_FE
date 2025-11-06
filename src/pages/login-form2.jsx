@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { TextField, Button, Card, CardContent, Typography, Box } from "@mui/material";
 import { AuthContext } from "@/routes/AuthProvider";
 
-export default function LoginForm() {
+export default function LoginForm2() {
     // dùng email + password cho đúng với form
     const [formData, setFormData] = useState({ username: "", password: "" });
     const auth = useContext(AuthContext);

@@ -9,7 +9,7 @@ export default function AuthProvider({ children }) {
      const [authLoading, setAuthLoading] = useState(false);   // ❗ Cần thêm
     const [authError, setAuthError] = useState(null);  
     // const login = (userData) => setUserData(userData);
-    const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8082";
+    const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8086";
 
     const login = async (userData) => {
         // setUserData(userData);
@@ -25,7 +25,7 @@ export default function AuthProvider({ children }) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 // nếu backend set cookie session, thêm:
-                credentials: "include",
+             
                 body: JSON.stringify(body),
             });
 

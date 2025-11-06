@@ -8,7 +8,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format, differenceInDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { CalendarIcon, AlertTriangle, Send } from 'lucide-react';
+import { CalendarIcon, AlertTriangle, Send, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LeaveType } from '@/types/leave';
 import { useNavigate } from 'react-router-dom';
@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 
 async function logLeaveRequests() {
   try {
-    const res = await fetch("http://localhost:8082/leave-request");
+    const res = await fetch("http://localhost:8086/leave-request");
     if (!res.ok) throw new Error("Network response was not ok");
     const data = await res.json();
     console.log("Leave requests:", data);
@@ -32,46 +32,64 @@ async function logLeaveRequests() {
 
 
 // API base có thể lấy từ env, fallback localhost
-const API_BASE = import.meta.env?.VITE_API_URL || 'http://localhost:8082';
+const API_BASE = import.meta.env?.VITE_API_URL || 'http://localhost:8086';
 
 type SendPayload = {
   requestorId: number;
+
+  reason: string;
   startDate: Date;
   endDate: Date;
-  reason: string;
 
   leaveType: LeaveType;
-  days: number;
 };
 
 async function sendLeaveRequest(p: SendPayload) {
-  // Backend dùng LocalDate -> yyyy-MM-dd
   const body = {
-    startDate: format(p.startDate, 'yyyy-MM-dd'),
-    endDate: format(p.endDate, 'yyyy-MM-dd'),
+    title: `Nghỉ phép - ${p.leaveType}`,
     reason: p.reason,
-    // title: `Nghỉ phép ${p.days} ngày - ${p.leaveType}`,
-    totalDays: p.days,
-    status: 'PENDING',
+    startDate: format(p.startDate, "yyyy-MM-dd"),
+    endDate: format(p.endDate, "yyyy-MM-dd"),
     leaveType: String(p.leaveType).toUpperCase(),
   };
 
-  // hard-code requestorId = 1 (nhưng vẫn lấy từ p để bạn dễ đổi sau)
-  const qs = new URLSearchParams({ requestorId: String(p.requestorId ?? 1) }).toString();
+  const qs = new URLSearchParams({
+    requestorId: String(p.requestorId ?? 10),
+  }).toString();
 
   const res = await fetch(`${API_BASE}/leave-request?${qs}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
     body: JSON.stringify(body),
   });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`${res.status} ${res.statusText}: ${text}`);
+  // 🔽 luôn đọc text để đảm bảo không lỗi parse
+  const text = await res.text();
+  let data: any;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = { message: text };
   }
 
-  return res.json();
+  // ⚠️ nếu không phải 2xx thì ném lỗi rõ ràng
+  if (!res.ok) {
+    const errorMessage =
+      data.message ||
+      data.error ||
+      `Request failed with status ${res.status} ${res.statusText}`;
+
+    console.error("❌ API Error:", errorMessage);
+    throw new Error(errorMessage);
+  }
+
+  // ✅ Trả kết quả JSON hoặc object text fallback
+  return data;
 }
+
 
 
 
@@ -83,6 +101,7 @@ export const CreateLeaveRequest = () => {
   const [endDate, setEndDate] = useState<Date>();
   const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [displayError, setDisplayError] = useState<string | null>(null);
 
 
 
@@ -97,16 +116,15 @@ export const CreateLeaveRequest = () => {
     // validate cơ bản
 
     if (!startDate || !endDate) {
-      alert('Vui lòng chọn ngày bắt đầu và kết thúc');
+      setDisplayError('Vui lòng chọn ngày bắt đầu và kết thúc');
       return;
     }
     if (startDate < today) {
-      alert('Vui lòng chọn ngày bắt đầu nghỉ từ ngày hôm nay trở đi');
+      setDisplayError('Vui lòng chọn ngày bắt đầu nghỉ từ ngày hôm nay trở đi');
       return;
     }
     if (endDate < startDate) {
-
-      alert('Ngày kết thúc phải sau ngày bắt đầu');
+      setDisplayError('Ngày kết thúc phải sau ngày bắt đầu');
       return;
     }
     // if (willExceedLimit) {
@@ -114,26 +132,28 @@ export const CreateLeaveRequest = () => {
     //   return;
     // }
     if (!reason.trim()) {
-      alert('Vui lòng nhập lý do nghỉ phép');
+      setDisplayError('Vui lòng nhập lý do nghỉ phép');
       return;
     }
 
     try {
+      setDisplayError(null);
       setSubmitting(true);
       await sendLeaveRequest({
-        requestorId: 1, // <-- truyền qua query như backend yêu cầu
+        requestorId: 11, // <-- truyền qua query như backend yêu cầu
+
+        reason,
         startDate,
         endDate,
-        reason,
 
         leaveType,
-        days,
+
       });
       alert('Đã gửi đơn nghỉ phép thành công!');
       navigate('/');
     } catch (err: any) {
       console.error(err);
-      alert('Gửi đơn thất bại. ' + (err?.message || ''));
+      setDisplayError('Gửi đơn thất bại. ' + (err?.message || ''));
     } finally {
       setSubmitting(false);
     }
@@ -223,6 +243,7 @@ export const CreateLeaveRequest = () => {
               <Label>Lý do nghỉ phép</Label>
               <Textarea
                 value={reason}
+                required
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Nhập lý do nghỉ phép..."
                 rows={4}
@@ -247,14 +268,34 @@ export const CreateLeaveRequest = () => {
             )} */}
 
             <div className="flex gap-3">
-              <Button type="submit" className="flex-1" onClick={handleSubmit} >
-                <Send className="h-4 w-4 mr-2" />
-                Gửi đơn
+              <Button type="submit" className="flex-1" disabled={submitting}>
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Đang gửi...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    Gửi đơn
+                  </>
+                )}
               </Button>
               <Button type="button" variant="outline" onClick={() => navigate('/')}>
                 Hủy
               </Button>
             </div>
+
+            {displayError != null ? (
+              <div
+                role="alert"
+                aria-live="polite"
+                className="text-sm rounded-md p-3 bg-[hsl(var(--destructive))] text-[hsl(var(--destructive-foreground))] text-center"
+              >
+                {displayError || "Đã xảy ra lỗi."}
+              </div>
+
+            ) : null}
           </form>
         </CardContent>
       </Card>
