@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -14,60 +14,129 @@ import { LeaveType } from '@/types/leave';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-// ✅ DỮ LIỆU GIẢ MẪU NGAY ĐẦU FILE
-const mockEmployee = {
-  id: 1,
-  name: 'Nguyễn Văn A',
-  totalLeaveDays: 12,
-  usedLeaveDays: 8,
-  department: 'Phòng Kỹ thuật',
-  position: 'Nhân viên lập trình',
+
+
+async function logLeaveRequests() {
+  try {
+    const res = await fetch("http://localhost:8082/leave-request");
+    if (!res.ok) throw new Error("Network response was not ok");
+    const data = await res.json();
+    console.log("Leave requests:", data);
+  } catch (e) {
+    console.error("Error fetching leave requests:", e);
+  }
+}
+
+//lấy ra ID:
+
+
+
+// API base có thể lấy từ env, fallback localhost
+const API_BASE = import.meta.env?.VITE_API_URL || 'http://localhost:8082';
+
+type SendPayload = {
+  requestorId: number;
+  startDate: Date;
+  endDate: Date;
+  reason: string;
+
+  leaveType: LeaveType;
+  days: number;
 };
 
-// ✅ Hàm giả lập xử lý gửi đơn
-const mockSubmit = (data: any) => {
-  console.log('📤 Đơn nghỉ phép được gửi:', data);
-};
+async function sendLeaveRequest(p: SendPayload) {
+  // Backend dùng LocalDate -> yyyy-MM-dd
+  const body = {
+    startDate: format(p.startDate, 'yyyy-MM-dd'),
+    endDate: format(p.endDate, 'yyyy-MM-dd'),
+    reason: p.reason,
+    // title: `Nghỉ phép ${p.days} ngày - ${p.leaveType}`,
+    totalDays: p.days,
+    status: 'PENDING',
+    leaveType: String(p.leaveType).toUpperCase(),
+  };
+
+  // hard-code requestorId = 1 (nhưng vẫn lấy từ p để bạn dễ đổi sau)
+  const qs = new URLSearchParams({ requestorId: String(p.requestorId ?? 1) }).toString();
+
+  const res = await fetch(`${API_BASE}/leave-request?${qs}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`${res.status} ${res.statusText}: ${text}`);
+  }
+
+  return res.json();
+}
+
+
 
 // 👉 Component chính (không chỉnh sửa định dạng gốc)
-export const CreateLeaveRequest = ({ employee = mockEmployee, onSubmit = mockSubmit }: any) => {
+export const CreateLeaveRequest = () => {
   const navigate = useNavigate();
   const [leaveType, setLeaveType] = useState<LeaveType>('annual');
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [reason, setReason] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+
 
   const days = startDate && endDate ? differenceInDays(endDate, startDate) + 1 : 0;
-  const willExceedLimit = employee.usedLeaveDays + days > employee.totalLeaveDays;
+  const willExceedLimit = 0 + days > 12;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // validate cơ bản
 
     if (!startDate || !endDate) {
-      toast.error('Vui lòng chọn ngày bắt đầu và kết thúc');
+      alert('Vui lòng chọn ngày bắt đầu và kết thúc');
       return;
     }
-
+    if (startDate < today) {
+      alert('Vui lòng chọn ngày bắt đầu nghỉ từ ngày hôm nay trở đi');
+      return;
+    }
     if (endDate < startDate) {
-      toast.error('Ngày kết thúc phải sau ngày bắt đầu');
+
+      alert('Ngày kết thúc phải sau ngày bắt đầu');
       return;
     }
-
+    // if (willExceedLimit) {
+    //   alert('Vượt quá số ngày nghỉ cho phép');
+    //   return;
+    // }
     if (!reason.trim()) {
-      toast.error('Vui lòng nhập lý do nghỉ phép');
+      alert('Vui lòng nhập lý do nghỉ phép');
       return;
     }
 
-    onSubmit({
-      leaveType,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      days,
-      reason,
-    });
+    try {
+      setSubmitting(true);
+      await sendLeaveRequest({
+        requestorId: 1, // <-- truyền qua query như backend yêu cầu
+        startDate,
+        endDate,
+        reason,
 
-    toast.success('Đã gửi đơn nghỉ phép thành công!');
-    navigate('/my-requests');
+        leaveType,
+        days,
+      });
+      alert('Đã gửi đơn nghỉ phép thành công!');
+      navigate('/');
+    } catch (err: any) {
+      console.error(err);
+      alert('Gửi đơn thất bại. ' + (err?.message || ''));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -84,12 +153,12 @@ export const CreateLeaveRequest = ({ employee = mockEmployee, onSubmit = mockSub
                 <Label>Loại phép</Label>
                 <LeaveTypeSelect value={leaveType} onChange={setLeaveType} />
               </div>
-              {/* <div className="space-y-2">
+              <div className="space-y-2">
                 <Label>Số ngày</Label>
                 <div className="flex h-10 items-center rounded-lg border border-input bg-muted px-3 text-sm">
                   {days > 0 ? `${days} ngày` : 'Chưa chọn'}
                 </div>
-              </div> */}
+              </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -108,7 +177,8 @@ export const CreateLeaveRequest = ({ employee = mockEmployee, onSubmit = mockSub
                       {startDate ? format(startDate, 'dd/MM/yyyy', { locale: vi }) : 'Chọn ngày'}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="z-50 w-auto p-0 bg-white dark:bg-neutral-900 border rounded-md shadow-lg"
+                    align="start">
                     <Calendar
                       mode="single"
                       selected={startDate}
@@ -135,7 +205,8 @@ export const CreateLeaveRequest = ({ employee = mockEmployee, onSubmit = mockSub
                       {endDate ? format(endDate, 'dd/MM/yyyy', { locale: vi }) : 'Chọn ngày'}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="z-50 w-auto p-0 bg-white dark:bg-neutral-900 border rounded-md shadow-lg"
+                    align="start">
                     <Calendar
                       mode="single"
                       selected={endDate}
@@ -158,7 +229,7 @@ export const CreateLeaveRequest = ({ employee = mockEmployee, onSubmit = mockSub
               />
             </div>
 
-            {willExceedLimit && days > 0 && (
+            {/* {willExceedLimit && days > 0 && (
               <Card className="border-warning bg-warning/10">
                 <CardContent className="pt-4">
                   <div className="flex items-start gap-3">
@@ -173,10 +244,10 @@ export const CreateLeaveRequest = ({ employee = mockEmployee, onSubmit = mockSub
                   </div>
                 </CardContent>
               </Card>
-            )}
+            )} */}
 
             <div className="flex gap-3">
-              <Button type="submit" className="flex-1">
+              <Button type="submit" className="flex-1" onClick={handleSubmit} >
                 <Send className="h-4 w-4 mr-2" />
                 Gửi đơn
               </Button>

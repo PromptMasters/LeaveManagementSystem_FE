@@ -4,14 +4,21 @@ import HomePage from "@/pages/HomePage";
 import ManagerPage from "../pages/ManagerPage";
 import { MyRequests } from "../pages/MyRequests";
 import { CreateLeaveRequest } from "@/pages/CreateLeaveRequest";
+import AuthProvider from "./AuthProvider";
+import LoginForm from "@/pages/login-form";
 export default function AppRouter() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="manager" element={<ManagerPage />} />
-        <Route path="request" element={<CreateLeaveRequest/>}/>
-      </Routes>
-    </BrowserRouter>
-  );
+    return (
+        <BrowserRouter>
+            <AuthProvider>
+                <Routes>
+
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="login" element={<LoginForm/>}/>
+                    <Route path="manager" element={<ManagerPage />} />
+                    <Route path="request" element={<CreateLeaveRequest />} />
+
+                </Routes>
+            </AuthProvider>
+        </BrowserRouter>
+    );
 }

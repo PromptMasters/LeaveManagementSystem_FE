@@ -6,10 +6,11 @@ interface LeaveTypeSelectProps {
 }
 
 const leaveTypes = {
-  annual: 'Nghỉ phép năm',
-  sick: 'Nghỉ ốm',
-  personal: 'Nghỉ việc riêng',
-  unpaid: 'Nghỉ không lương',
+  ANNUAL: 'Nghỉ phép năm',
+  SICK: 'Nghỉ ốm',
+  UNPAID: 'Nghỉ không lương',
+  MATERNITY: 'Nghỉ thai sản',
+  DEFAULT: 'Khác',
 };
 
 export const LeaveTypeSelect = ({ value, onChange }: LeaveTypeSelectProps) => {
